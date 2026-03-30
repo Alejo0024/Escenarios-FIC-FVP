@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Interés Compuesto</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --bg2: #F2F0EC;
+    --bg3: #FFFFFF;
+    --text: #1A1A18;
+    --text2: #6B6A65;
+    --text3: #9B9A95;
+    --border: rgba(0,0,0,0.1);
+    --green: #0F6E56;
+    --green-light: #E1F5EE;
+    --green-dark: #085041;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --red: #A32D2D;
+    --accent: #0F6E56;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'EB Garamond', Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1A18;
+      --bg2: #2C2C2A;
+      --bg3: #333330;
+      --text: #F1EFE8;
+      --text2: #B4B2A9;
+      --text3: #888780;
+      --border: rgba(255,255,255,0.1);
+      --green-light: rgba(13,110,86,0.15);
+      --blue-light: rgba(24,95,165,0.15);
+      --purple-light: rgba(83,74,183,0.15);
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+  }
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--text2);
+    margin-bottom: 2.5rem;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  .card {
+    background: var(--bg2);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+  }
+  .card-label {
+    font-size: 0.8rem;
+    color: var(--text2);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .card-value {
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+  .card-value.green { color: var(--green); }
+  .card-value.big { font-size: 1.6rem; }
+  .controls {
+    margin-bottom: 2rem;
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .control-row label {
+    font-size: 0.95rem;
+    color: var(--text2);
+    min-width: 55px;
+  }
+  .control-row input[type="range"] {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  .control-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--bg);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .control-row input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--bg);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .control-row .val {
+    font-size: 0.95rem;
+    font-weight: 600;
+    min-width: 70px;
+    text-align: right;
+  }
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 340px;
+    margin-bottom: 1rem;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 2rem;
+  }
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .table-wrap {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  thead tr {
+    position: sticky;
+    top: 0;
+    background: var(--bg2);
+    z-index: 2;
+  }
+  th {
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    color: var(--text2);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr.highlight {
+    background: var(--green-light);
+  }
+  .rend { color: var(--green); }
+  .acum { font-weight: 600; }
+  .footer-note {
+    font-size: 0.8rem;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 2rem;
+    line-height: 1.5;
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 1.6rem; }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .card-value { font-size: 1.1rem; }
+    .card-value.big { font-size: 1.25rem; }
+    .chart-wrap { height: 260px; }
+    th, td { padding: 6px 8px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Calculadora de Interés Compuesto</h1>
+  <p class="subtitle">Simula el crecimiento de tu inversión con aportes mensuales</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Aporte mensual</div>
+      <div class="card-value" id="card-aporte">$1.000.000</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total aportado</div>
+      <div class="card-value" id="card-totalap">$0</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Rendimientos</div>
+      <div class="card-value green" id="card-rend">$0</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Valor acumulado</div>
+      <div class="card-value green big" id="card-total">$0</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <label>Años</label>
+      <input type="range" min="1" max="40" value="30" step="1" id="sl-y" />
+      <span class="val" id="out-y">30</span>
+    </div>
+    <div class="control-row">
+      <label>Tasa EA</label>
+      <input type="range" min="5" max="25" value="18" step="0.5" id="sl-r" />
+      <span class="val" id="out-r">18.0%</span>
+    </div>
+    <div class="control-row">
+      <label>Aporte</label>
+      <input type="range" min="500000" max="10000000" value="1000000" step="100000" id="sl-a" />
+      <span class="val" id="out-a">$1.0M</span>
+    </div>
+    <div class="control-row">
+      <label>Edad</label>
+      <input type="range" min="18" max="50" value="25" step="1" id="sl-e" />
+      <span class="val" id="out-e">25 años</span>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="mainChart"></canvas>
+  </div>
+  <div class="legend" id="mainLegend"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left;">Año</th>
+          <th style="text-align:center;">Edad</th>
+          <th style="text-align:right;">Aportado</th>
+          <th style="text-align:right;">Rendimientos</th>
+          <th style="text-align:right;">Acumulado</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div>
+
+  <p class="footer-note">
+    Esta calculadora es una herramienta educativa. Las rentabilidades esperadas no son garantía de rendimientos futuros.<br>
+    Los resultados son aproximaciones y no constituyen asesoría financiera.
+  </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const fmt = v => {
+  if (v >= 1e12) return '$' + (v / 1e12).toFixed(1) + 'T';
+  if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
+  if (v >= 1e6) return '$' + (v / 1e6).toFixed(0) + 'M';
+  if (v >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
+  return '$' + Math.round(v);
+};
+const fmtF = v => '$' + Math.round(v).toLocaleString('es-CO');
+
+const isDk = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDk ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)';
+const tickColor = isDk ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+const apColor = '#185FA5';
+const reColor = '#0F6E56';
+
+const ctx = document.getElementById('mainChart').getContext('2d');
+const chart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: [],
+    datasets: [
+      { label: 'Aportado', data: [], backgroundColor: apColor, borderRadius: 3 },
+      { label: 'Rendimientos', data: [], backgroundColor: reColor, borderRadius: 3 }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        titleFont: { family: "'EB Garamond', Georgia, serif" },
+        bodyFont: { family: "'EB Garamond', Georgia, serif" },
+        callbacks: {
+          label: c => c.dataset.label + ': ' + fmtF(c.raw),
+          footer: items => 'Total: ' + fmtF(items.reduce((s, i) => s + i.raw, 0))
+        }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { color: tickColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 15, font: { family: "'EB Garamond', Georgia, serif" } }
+      },
+      y: {
+        stacked: true,
+        grid: { color: gridColor },
+        ticks: { color: tickColor, callback: v => fmt(v), font: { family: "'EB Garamond', Georgia, serif" } },
+        border: { display: false }
+      }
+    }
+  }
+});
+
+function compute() {
+  const years = parseInt(document.getElementById('sl-y').value);
+  const ea = parseFloat(document.getElementById('sl-r').value) / 100;
+  const aporte = parseInt(document.getElementById('sl-a').value);
+  const edadInicio = parseInt(document.getElementById('sl-e').value);
+  const im = Math.pow(1 + ea, 1 / 12) - 1;
+
+  document.getElementById('out-y').textContent = years;
+  document.getElementById('out-r').textContent = (ea * 100).toFixed(1) + '%';
+  document.getElementById('out-a').textContent = fmt(aporte);
+  document.getElementById('out-e').textContent = edadInicio + ' años';
+  document.getElementById('card-aporte').textContent = fmtF(aporte);
+
+  const labels = [], aportados = [], rendimientos = [];
+  let acum = 0;
+  const highlightYears = [5, 10, 15, 20, 25, 30, 35, 40];
+
+  for (let y = 1; y <= years; y++) {
+    for (let m = 0; m < 12; m++) acum = acum * (1 + im) + aporte;
+    const totalAp = aporte * 12 * y;
+    labels.push(y);
+    aportados.push(totalAp);
+    rendimientos.push(acum - totalAp);
+  }
+
+  const totalAp = aporte * 12 * years;
+  const totalRend = acum - totalAp;
+
+  document.getElementById('card-totalap').textContent = fmtF(totalAp);
+  document.getElementById('card-rend').textContent = fmtF(totalRend);
+  document.getElementById('card-total').textContent = fmtF(acum);
+
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = aportados;
+  chart.data.datasets[1].data = rendimientos;
+  chart.update();
+
+  document.getElementById('mainLegend').innerHTML =
+    '<span><span class="dot" style="background:' + apColor + ';"></span>Aportado: ' + fmtF(totalAp) + '</span>' +
+    '<span><span class="dot" style="background:' + reColor + ';"></span>Rendimientos: ' + fmtF(totalRend) + '</span>';
+
+  const tbody = document.getElementById('tbl-body');
+  tbody.innerHTML = '';
+  for (let y = 0; y < years; y++) {
+    const ap = aportados[y];
+    const rend = rendimientos[y];
+    const total = ap + rend;
+    const edad = edadInicio + y + 1;
+    const isHL = highlightYears.includes(y + 1);
+
+    const tr = document.createElement('tr');
+    if (isHL) tr.className = 'highlight';
+    tr.innerHTML =
+      '<td style="text-align:left;">' + (y + 1) + '</td>' +
+      '<td style="text-align:center;">' + edad + ' años</td>' +
+      '<td style="text-align:right;">' + fmtF(ap) + '</td>' +
+      '<td style="text-align:right;" class="rend">' + fmtF(rend) + '</td>' +
+      '<td style="text-align:right;" class="acum">' + fmtF(total) + '</td>';
+    tbody.appendChild(tr);
+  }
+}
+
+document.getElementById('sl-y').addEventListener('input', compute);
+document.getElementById('sl-r').addEventListener('input', compute);
+document.getElementById('sl-a').addEventListener('input', compute);
+document.getElementById('sl-e').addEventListener('input', compute);
+compute();
+</script>
+</body>
+</html>
